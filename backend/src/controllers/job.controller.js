@@ -26,7 +26,7 @@ export const create = async (req, res) => {
         if(!newJob) return res.status(400).json({ message: "Invalid job data" });
 
         await newJob.save();
-        res.status(201).json({ message: "Successfully created job" });
+        res.status(201).json(newJob);
     }catch (err) {
         console.log("error in createJob controller: " + err.message);
         res.status(500).json({ message: "Internal Server Error" });

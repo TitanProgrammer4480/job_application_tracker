@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
+import { useJobStore } from "../store/useJobStore.js";
 import JobCard from './jobCard';
 
 function MainField() {
 
-  const [jobs, setJobs] = useState([]);
+  const { jobs, remove, add, get } = useJobStore();
 
   useEffect(() => {
-    const storedJobs = JSON.parse(localStorage.getItem("jobs")) || [];
-    if (storedJobs) {
-      setJobs(storedJobs);
-    }
+    get();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const { jobName, companyName, place, link } = Object.fromEntries(formData);
@@ -24,26 +22,16 @@ function MainField() {
       applied: formData.get("applied") ? true : false,
       remote: formData.get("remote") ? true : false
     };
-    setJobs(prevJobs => {
-      const updatedJobs = [...prevJobs, newJob];
-      localStorage.setItem("jobs", JSON.stringify(updatedJobs));
-      return updatedJobs;
-    });
-    console.log(jobs.length);
-    console.log(jobs);
+    try {
+      await add(newJob);
 
-    e.target.reset();
+      e.target.reset();
+    }catch (err) {
+      console.log("Failed to send message:", err)
+    }
   };
 
-  const handleDeletion = (index) => {
-    setJobs(prevJobs => {
-      const updatedJobs = prevJobs.filter((_, i) => i !== index);
-      localStorage.setItem("jobs", JSON.stringify(updatedJobs));
-      return updatedJobs;
-    });
-  };
-
-  const jobList = jobs.map((job, index) => <JobCard key={index} job={job} number={index} btnFunction={handleDeletion} />);
+  const jobList = jobs.map((job, index) => <JobCard key={index} job={job} number={index} btnFunction={remove} />);
 
   return (
     <div className="w-full h-[85vh] mt-20 flex flex-col items-center">
